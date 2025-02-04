@@ -12,12 +12,12 @@ import { authformSchema } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signIn, signUp } from "@/lib/actions/user.actions";
+import PlaidLink from "./PlaidLink";
 
 const AuthForm = ({ type }: { type: string }) => {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  
 
   const formSchema = authformSchema(type);
 
@@ -36,25 +36,35 @@ const AuthForm = ({ type }: { type: string }) => {
     try {
       // Sign Up with Appwrite & create plaid link token
 
-      if(type === 'sign-up') {
-        const newUser = await signUp(data);
+      if (type === "sign-up") {
+        const userData = {
+          firstName: data.firstName!,
+          lastName: data.lastName!,
+          address1: data.address1!,
+          city: data.city!,
+          state: data.state!,
+          postalCode: data.postalCode!,
+          dateOfBirth: data.dateOfBirth!,
+          ssn: data.ssn!,
+          email: data.email,
+          password: data.password,
+        };
+        const newUser = await signUp(userData);
 
         setUser(newUser);
-
       }
 
-      if(type === 'sign-in') {
-          const response = await signIn({
-            email: data.email,
-            password: data.password,
-        })
-        if(response) router.push('/');
-      
-      };
+      if (type === "sign-in") {
+        const response = await signIn({
+          email: data.email,
+          password: data.password,
+        });
+        if (response) router.push("/");
+      }
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false);  
+      setIsLoading(false);
     }
   };
 
@@ -85,7 +95,9 @@ const AuthForm = ({ type }: { type: string }) => {
         </div>
       </header>
       {user ? (
-        <div className="flex flex-col gap-4">{/* PlaidLink */}</div>
+        <div className="flex flex-col gap-4">
+          <PlaidLink user={user} variant="primary" />
+        </div>
       ) : (
         <>
           <Form {...form}>
